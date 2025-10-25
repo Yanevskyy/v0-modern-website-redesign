@@ -16,12 +16,44 @@ export function ContactForm() {
     phone: "",
     message: "",
   })
+  const [isLoading, setIsLoading] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle")
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle form submission
-    console.log("Form submitted:", formData)
-    alert("Thank you for your enquiry! We will get back to you soon.")
+    setIsLoading(true)
+    setSubmitStatus("idle")
+
+    try {
+      const response = await fetch("/api/send-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setSubmitStatus("success")
+        // Reset form
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          message: "",
+        })
+      } else {
+        setSubmitStatus("error")
+        console.error("Error:", data.error)
+      }
+    } catch (error) {
+      setSubmitStatus("error")
+      console.error("Error submitting form:", error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -37,6 +69,7 @@ export function ContactForm() {
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
+            disabled={isLoading}
             className="border-slate-600 bg-slate-700 text-white placeholder:text-gray-400 transition-all duration-300 focus:ring-2 focus:ring-primary"
           />
         </div>
@@ -52,6 +85,7 @@ export function ContactForm() {
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             required
+            disabled={isLoading}
             className="border-slate-600 bg-slate-700 text-white placeholder:text-gray-400 transition-all duration-300 focus:ring-2 focus:ring-primary"
           />
         </div>
@@ -66,6 +100,7 @@ export function ContactForm() {
             placeholder="+353 87 741 4968"
             value={formData.phone}
             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+            disabled={isLoading}
             className="border-slate-600 bg-slate-700 text-white placeholder:text-gray-400 transition-all duration-300 focus:ring-2 focus:ring-primary"
           />
         </div>
@@ -80,16 +115,30 @@ export function ContactForm() {
             value={formData.message}
             onChange={(e) => setFormData({ ...formData, message: e.target.value })}
             required
+            disabled={isLoading}
             rows={5}
             className="border-slate-600 bg-slate-700 text-white placeholder:text-gray-400 transition-all duration-300 focus:ring-2 focus:ring-primary"
           />
         </div>
 
+        {submitStatus === "success" && (
+          <div className="rounded-lg bg-green-900/50 border border-green-700 p-4 text-green-200">
+            Thank you for your enquiry! We will get back to you soon.
+          </div>
+        )}
+
+        {submitStatus === "error" && (
+          <div className="rounded-lg bg-red-900/50 border border-red-700 p-4 text-red-200">
+            Failed to send message. Please try again or contact us directly.
+          </div>
+        )}
+
         <Button
           type="submit"
-          className="w-full bg-white py-6 text-lg font-bold text-slate-900 transition-colors hover:bg-gray-100"
+          disabled={isLoading}
+          className="w-full bg-white py-6 text-lg font-bold text-slate-900 transition-colors hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Send Enquiry
+          {isLoading ? "Sending..." : "Send Enquiry"}
         </Button>
       </form>
     </Card>

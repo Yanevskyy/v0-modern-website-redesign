@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
-import { Award, Users, Facebook, Twitter, Instagram, X, MessageCircle, Phone, Mail } from "lucide-react"
+import { Award, Users, Facebook, Instagram, X, MessageCircle, Phone, Mail } from "lucide-react"
 import { Hero } from "@/components/hero"
 import { DanceStyleCard } from "@/components/dance-style-card"
 import { ContactForm } from "@/components/contact-form"
@@ -338,7 +338,7 @@ export default function Home() {
               <p className="text-base text-gray-300">Get in touch to learn more about classes and events</p>
             </div>
 
-            <div className="mb-8 grid gap-4 md:grid-cols-3">
+            <div className="mb-8 grid gap-4 md:grid-cols-4">
               <a
                 href="tel:+353877414968"
                 className="flex items-center gap-3 rounded-lg border border-slate-700 bg-slate-800 p-4 transition-all hover:border-primary hover:bg-slate-700"
@@ -371,6 +371,19 @@ export default function Home() {
                 <div>
                   <p className="text-xs text-gray-400">Facebook</p>
                   <p className="text-sm font-medium text-white">Visit Page</p>
+                </div>
+              </a>
+
+              <a
+                href="https://www.instagram.com/kierankellydance"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 rounded-lg border border-slate-700 bg-slate-800 p-4 transition-all hover:border-primary hover:bg-slate-700"
+              >
+                <Instagram className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="text-xs text-gray-400">Instagram</p>
+                  <p className="text-sm font-medium text-white">Follow Us</p>
                 </div>
               </a>
             </div>
@@ -414,35 +427,6 @@ export default function Home() {
               <h2 className="text-lg font-bold">Kieran Kelly Dance</h2>
             </div>
             <p className="text-sm text-gray-400">© 2025 Kieran Kelly Dance. All Rights Reserved.</p>
-            <div className="flex items-center gap-6">
-              <a
-                className="text-gray-400 transition-colors hover:text-primary"
-                href="https://www.facebook.com/kierankellydance"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Visit Kieran Kelly Dance on Facebook"
-              >
-                <Facebook className="h-5 w-5" />
-              </a>
-              <a
-                className="text-gray-400 transition-colors hover:text-primary"
-                href="https://twitter.com/kierankellydance"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Follow Kieran Kelly Dance on Twitter"
-              >
-                <Twitter className="h-5 w-5" />
-              </a>
-              <a
-                className="text-gray-400 transition-colors hover:text-primary"
-                href="https://www.instagram.com/kierankellydance"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Follow Kieran Kelly Dance on Instagram"
-              >
-                <Instagram className="h-5 w-5" />
-              </a>
-            </div>
           </div>
           <div className="mt-6 flex flex-wrap justify-center gap-4 border-t border-slate-800 pt-6 text-center text-sm">
             <Link href="/privacy-policy" className="text-gray-400 transition-colors hover:text-primary hover:underline">

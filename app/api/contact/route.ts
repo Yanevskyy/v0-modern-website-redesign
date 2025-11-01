@@ -1,7 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
-import nodemailer from "nodemailer"
 
-// Force Node.js runtime (required for nodemailer)
+// Force Node.js runtime
 export const runtime = "nodejs"
 
 // Email validation regex
@@ -170,20 +169,54 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid email format" }, { status: 400 })
     }
 
+    // Prepare email data
+    const timestamp = new Date().toLocaleString("en-IE", {
+      timeZone: "Europe/Dublin",
+      dateStyle: "full",
+      timeStyle: "short",
+    })
+
+    const emailData = {
+      name,
+      email,
+      phone: phone || "Not provided",
+      message,
+      timestamp,
+    }
+
+    const isProduction = process.env.VERCEL_ENV === "production"
+
+    if (!isProduction) {
+      // In preview/development: Log the email data and return success
+      console.log("[v0] PREVIEW MODE - Email would be sent with the following data:")
+      console.log("[v0] Admin Email:", {
+        to: process.env.ADMIN_EMAIL || "admin@example.com",
+        subject: `New Contact Form Submission from ${name}`,
+        data: emailData,
+      })
+      console.log("[v0] Customer Email:", {
+        to: email,
+        subject: "Thank You for Your Inquiry - Kieran Kelly Dance",
+        name: name,
+      })
+      console.log("[v0] Note: Actual emails will be sent when deployed to production")
+
+      return NextResponse.json(
+        {
+          message: "Email sent successfully (Preview Mode - check console for details)",
+        },
+        { status: 200 },
+      )
+    }
+
+    const { default: nodemailer } = await import("nodemailer")
+
     // Check environment variables
     const smtpHost = process.env.SMTP_HOST
     const smtpPort = process.env.SMTP_PORT
     const smtpPassword = process.env.SMTP_PASSWORD
     const adminEmail = process.env.ADMIN_EMAIL
     const mailFrom = process.env.MAIL_FROM
-
-    console.log("[v0] Environment variables check:", {
-      smtpHost: smtpHost ? "set" : "MISSING",
-      smtpPort: smtpPort ? "set" : "MISSING",
-      smtpPassword: smtpPassword ? "set" : "MISSING",
-      adminEmail: adminEmail ? "set" : "MISSING",
-      mailFrom: mailFrom ? "set" : "MISSING",
-    })
 
     if (!smtpHost || !smtpPort || !smtpPassword || !adminEmail || !mailFrom) {
       console.error("[v0] Missing email configuration environment variables")
@@ -197,87 +230,42 @@ export async function POST(request: NextRequest) {
     }
 
     const port = Number.parseInt(smtpPort, 10)
-    const useSecure = port === 465 // Only use secure: true for port 465
+    const useSecure = port === 465
 
     const transportConfig = {
       host: smtpHost,
       port: port,
-      secure: useSecure, // true for 465, false for other ports like 587
+      secure: useSecure,
       auth: {
         user: mailFrom,
         pass: smtpPassword,
       },
-      // Add TLS options for better compatibility
       tls: {
         ciphers: "SSLv3",
-        rejectUnauthorized: false, // Allow self-signed certificates in development
+        rejectUnauthorized: false,
       },
-      // Add connection timeout
       connectionTimeout: 10000,
       greetingTimeout: 10000,
       socketTimeout: 10000,
     }
 
-    console.log("[v0] Creating transporter with config:", {
-      host: transportConfig.host,
-      port: transportConfig.port,
-      secure: transportConfig.secure,
-      user: transportConfig.auth.user,
-    })
-
-    let transporter
-    try {
-      transporter = nodemailer.createTransport(transportConfig)
-      console.log("[v0] Transporter created successfully")
-    } catch (error) {
-      console.error("[v0] Failed to create transporter:", error)
-      return NextResponse.json({ error: "Failed to initialize email service" }, { status: 500 })
-    }
-
-    // Prepare email data
-    const timestamp = new Date().toLocaleString("en-IE", {
-      timeZone: "Europe/Dublin",
-      dateStyle: "full",
-      timeStyle: "short",
-    })
-
-    const emailData = {
-      name,
-      email,
-      phone: phone || "",
-      message,
-      timestamp,
-    }
+    const transporter = nodemailer.createTransport(transportConfig)
 
     // Send admin notification email
-    console.log("[v0] Sending admin notification email...")
-    try {
-      await transporter.sendMail({
-        from: `"Kieran Kelly Dance Website" <${mailFrom}>`,
-        to: adminEmail,
-        subject: `New Contact Form Submission from ${name}`,
-        html: getAdminEmailTemplate(emailData),
-      })
-      console.log("[v0] Admin email sent successfully")
-    } catch (error) {
-      console.error("[v0] Failed to send admin email:", error)
-      throw new Error("Failed to send admin notification email")
-    }
+    await transporter.sendMail({
+      from: `"Kieran Kelly Dance Website" <${mailFrom}>`,
+      to: adminEmail,
+      subject: `New Contact Form Submission from ${name}`,
+      html: getAdminEmailTemplate(emailData),
+    })
 
     // Send customer auto-reply
-    console.log("[v0] Sending customer auto-reply email...")
-    try {
-      await transporter.sendMail({
-        from: `"Kieran Kelly Dance" <${mailFrom}>`,
-        to: email,
-        subject: "Thank You for Your Inquiry - Kieran Kelly Dance",
-        html: getCustomerEmailTemplate(name),
-      })
-      console.log("[v0] Customer email sent successfully")
-    } catch (error) {
-      console.error("[v0] Failed to send customer email:", error)
-      throw new Error("Failed to send customer confirmation email")
-    }
+    await transporter.sendMail({
+      from: `"Kieran Kelly Dance" <${mailFrom}>`,
+      to: email,
+      subject: "Thank You for Your Inquiry - Kieran Kelly Dance",
+      html: getCustomerEmailTemplate(name),
+    })
 
     return NextResponse.json({ message: "Email sent successfully" }, { status: 200 })
   } catch (error) {

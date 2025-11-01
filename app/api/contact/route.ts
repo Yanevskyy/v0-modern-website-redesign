@@ -222,19 +222,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to initialize email service" }, { status: 500 })
     }
 
-    // Verify transporter configuration
-    try {
-      console.log("[v0] Verifying SMTP connection...")
-      await transporter.verify()
-      console.log("[v0] SMTP connection verified successfully")
-    } catch (error) {
-      console.error("[v0] SMTP connection failed:", error)
-      return NextResponse.json(
-        { error: "Failed to connect to email server. Please check SMTP configuration." },
-        { status: 503 },
-      )
-    }
-
     // Prepare email data
     const timestamp = new Date().toLocaleString("en-IE", {
       timeZone: "Europe/Dublin",
@@ -252,23 +239,33 @@ export async function POST(request: NextRequest) {
 
     // Send admin notification email
     console.log("[v0] Sending admin notification email...")
-    await transporter.sendMail({
-      from: `"Kieran Kelly Dance Website" <${mailFrom}>`,
-      to: adminEmail,
-      subject: `New Contact Form Submission from ${name}`,
-      html: getAdminEmailTemplate(emailData),
-    })
-    console.log("[v0] Admin email sent successfully")
+    try {
+      await transporter.sendMail({
+        from: `"Kieran Kelly Dance Website" <${mailFrom}>`,
+        to: adminEmail,
+        subject: `New Contact Form Submission from ${name}`,
+        html: getAdminEmailTemplate(emailData),
+      })
+      console.log("[v0] Admin email sent successfully")
+    } catch (error) {
+      console.error("[v0] Failed to send admin email:", error)
+      throw new Error("Failed to send admin notification email")
+    }
 
     // Send customer auto-reply
     console.log("[v0] Sending customer auto-reply email...")
-    await transporter.sendMail({
-      from: `"Kieran Kelly Dance" <${mailFrom}>`,
-      to: email,
-      subject: "Thank You for Your Inquiry - Kieran Kelly Dance",
-      html: getCustomerEmailTemplate(name),
-    })
-    console.log("[v0] Customer email sent successfully")
+    try {
+      await transporter.sendMail({
+        from: `"Kieran Kelly Dance" <${mailFrom}>`,
+        to: email,
+        subject: "Thank You for Your Inquiry - Kieran Kelly Dance",
+        html: getCustomerEmailTemplate(name),
+      })
+      console.log("[v0] Customer email sent successfully")
+    } catch (error) {
+      console.error("[v0] Failed to send customer email:", error)
+      throw new Error("Failed to send customer confirmation email")
+    }
 
     return NextResponse.json({ message: "Email sent successfully" }, { status: 200 })
   } catch (error) {

@@ -155,6 +155,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { name, email, phone, message } = body
 
+    console.log("[v0] Received contact form submission:", { name, email, phone: phone ? "provided" : "not provided" })
+
     // Validate required fields
     if (!name || !email || !message) {
       return NextResponse.json(
@@ -175,31 +177,62 @@ export async function POST(request: NextRequest) {
     const adminEmail = process.env.ADMIN_EMAIL
     const mailFrom = process.env.MAIL_FROM
 
+    console.log("[v0] Environment variables check:", {
+      smtpHost: smtpHost ? "set" : "MISSING",
+      smtpPort: smtpPort ? "set" : "MISSING",
+      smtpPassword: smtpPassword ? "set" : "MISSING",
+      adminEmail: adminEmail ? "set" : "MISSING",
+      mailFrom: mailFrom ? "set" : "MISSING",
+    })
+
     if (!smtpHost || !smtpPort || !smtpPassword || !adminEmail || !mailFrom) {
       console.error("[v0] Missing email configuration environment variables")
       return NextResponse.json(
-        { error: "Email service is not configured. Please contact the administrator." },
+        {
+          error:
+            "Email service is not configured. Please set up the required environment variables: SMTP_HOST, SMTP_PORT, SMTP_PASSWORD, ADMIN_EMAIL, MAIL_FROM",
+        },
         { status: 503 },
       )
     }
 
-    // Create nodemailer transporter
-    const transporter = nodemailer.createTransport({
+    const transportConfig = {
       host: smtpHost,
-      port: Number.parseInt(smtpPort),
-      secure: true, // Use SSL
+      port: Number.parseInt(smtpPort, 10),
+      secure: true,
       auth: {
         user: mailFrom,
         pass: smtpPassword,
       },
+    }
+
+    console.log("[v0] Creating transporter with config:", {
+      host: transportConfig.host,
+      port: transportConfig.port,
+      secure: transportConfig.secure,
+      user: transportConfig.auth.user,
     })
+
+    let transporter
+    try {
+      transporter = nodemailer.createTransport(transportConfig)
+      console.log("[v0] Transporter created successfully")
+    } catch (error) {
+      console.error("[v0] Failed to create transporter:", error)
+      return NextResponse.json({ error: "Failed to initialize email service" }, { status: 500 })
+    }
 
     // Verify transporter configuration
     try {
+      console.log("[v0] Verifying SMTP connection...")
       await transporter.verify()
+      console.log("[v0] SMTP connection verified successfully")
     } catch (error) {
       console.error("[v0] SMTP connection failed:", error)
-      return NextResponse.json({ error: "Failed to connect to email server" }, { status: 503 })
+      return NextResponse.json(
+        { error: "Failed to connect to email server. Please check SMTP configuration." },
+        { status: 503 },
+      )
     }
 
     // Prepare email data
@@ -218,20 +251,24 @@ export async function POST(request: NextRequest) {
     }
 
     // Send admin notification email
+    console.log("[v0] Sending admin notification email...")
     await transporter.sendMail({
       from: `"Kieran Kelly Dance Website" <${mailFrom}>`,
       to: adminEmail,
       subject: `New Contact Form Submission from ${name}`,
       html: getAdminEmailTemplate(emailData),
     })
+    console.log("[v0] Admin email sent successfully")
 
     // Send customer auto-reply
+    console.log("[v0] Sending customer auto-reply email...")
     await transporter.sendMail({
       from: `"Kieran Kelly Dance" <${mailFrom}>`,
       to: email,
       subject: "Thank You for Your Inquiry - Kieran Kelly Dance",
       html: getCustomerEmailTemplate(name),
     })
+    console.log("[v0] Customer email sent successfully")
 
     return NextResponse.json({ message: "Email sent successfully" }, { status: 200 })
   } catch (error) {

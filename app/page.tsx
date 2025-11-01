@@ -338,15 +338,15 @@ export default function Home() {
               <p className="text-base text-gray-300">Get in touch to learn more about classes and events</p>
             </div>
 
-            <div className="mb-8 grid gap-4 md:grid-cols-4">
+            <div className="mb-8 grid gap-4 md:grid-cols-2">
               <a
                 href="tel:+353877414968"
                 className="flex items-center gap-3 rounded-lg border border-slate-700 bg-slate-800 p-4 transition-all hover:border-primary hover:bg-slate-700"
               >
-                <Phone className="h-5 w-5 text-primary" />
-                <div>
+                <Phone className="h-5 w-5 flex-shrink-0 text-primary" />
+                <div className="min-w-0 flex-1">
                   <p className="text-xs text-gray-400">Phone</p>
-                  <p className="text-sm font-medium text-white">+353 87 741 4968</p>
+                  <p className="truncate text-sm font-medium text-white">+353 87 741 4968</p>
                 </div>
               </a>
 
@@ -354,10 +354,10 @@ export default function Home() {
                 href="mailto:kierankellydance@gmail.com"
                 className="flex items-center gap-3 rounded-lg border border-slate-700 bg-slate-800 p-4 transition-all hover:border-primary hover:bg-slate-700"
               >
-                <Mail className="h-5 w-5 text-primary" />
-                <div>
+                <Mail className="h-5 w-5 flex-shrink-0 text-primary" />
+                <div className="min-w-0 flex-1">
                   <p className="text-xs text-gray-400">Email</p>
-                  <p className="text-sm font-medium text-white">kierankellydance@gmail.com</p>
+                  <p className="truncate text-sm font-medium text-white">kierankellydance@gmail.com</p>
                 </div>
               </a>
 
@@ -367,8 +367,8 @@ export default function Home() {
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 rounded-lg border border-slate-700 bg-slate-800 p-4 transition-all hover:border-primary hover:bg-slate-700"
               >
-                <Facebook className="h-5 w-5 text-primary" />
-                <div>
+                <Facebook className="h-5 w-5 flex-shrink-0 text-primary" />
+                <div className="min-w-0 flex-1">
                   <p className="text-xs text-gray-400">Facebook</p>
                   <p className="text-sm font-medium text-white">Visit Page</p>
                 </div>
@@ -380,8 +380,8 @@ export default function Home() {
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 rounded-lg border border-slate-700 bg-slate-800 p-4 transition-all hover:border-primary hover:bg-slate-700"
               >
-                <Instagram className="h-5 w-5 text-primary" />
-                <div>
+                <Instagram className="h-5 w-5 flex-shrink-0 text-primary" />
+                <div className="min-w-0 flex-1">
                   <p className="text-xs text-gray-400">Instagram</p>
                   <p className="text-sm font-medium text-white">Follow Us</p>
                 </div>

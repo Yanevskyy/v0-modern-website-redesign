@@ -101,12 +101,12 @@ export function DanceStyleCard({ title, description, image }: DanceStyleCardProp
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <div className="relative h-48 overflow-hidden">
+        <div className="relative h-48 overflow-hidden bg-slate-900">
           <Image
             src={image || "/placeholder.svg?height=300&width=400"}
             alt={title}
             fill
-            className={`object-cover transition-transform duration-700 ${isHovered ? "scale-110" : "scale-100"}`}
+            className={`object-contain transition-transform duration-700 ${isHovered ? "scale-110" : "scale-100"}`}
           />
         </div>
         <div className="p-6">
@@ -134,12 +134,12 @@ export function DanceStyleCard({ title, description, image }: DanceStyleCardProp
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="relative h-48 overflow-hidden">
+      <div className="relative h-48 overflow-hidden bg-slate-900">
         <Image
           src={image || "/placeholder.svg?height=300&width=400"}
           alt={title}
           fill
-          className={`object-cover transition-transform duration-700 ${isHovered ? "scale-110" : "scale-100"}`}
+          className={`object-contain transition-transform duration-700 ${isHovered ? "scale-110" : "scale-100"}`}
         />
       </div>
       <div className="p-6">

@@ -196,14 +196,26 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const port = Number.parseInt(smtpPort, 10)
+    const useSecure = port === 465 // Only use secure: true for port 465
+
     const transportConfig = {
       host: smtpHost,
-      port: Number.parseInt(smtpPort, 10),
-      secure: true,
+      port: port,
+      secure: useSecure, // true for 465, false for other ports like 587
       auth: {
         user: mailFrom,
         pass: smtpPassword,
       },
+      // Add TLS options for better compatibility
+      tls: {
+        ciphers: "SSLv3",
+        rejectUnauthorized: false, // Allow self-signed certificates in development
+      },
+      // Add connection timeout
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 10000,
     }
 
     console.log("[v0] Creating transporter with config:", {
